@@ -4,6 +4,47 @@ import { toArray } from './util'
 import { isDataUrl, resourceToDataURL } from './dataurl'
 import { getMimeType } from './mimes'
 
+const proxy = (src: string, options: Options): Promise<string> => {
+  const proxy = options.proxy
+
+  if (!proxy) {
+    throw new Error('No proxy defined')
+  }
+  return new Promise((resolve, reject) => {
+    const responseType = 'blob'
+    const xhr = new XMLHttpRequest()
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const reader = new FileReader()
+        reader.addEventListener(
+          'load',
+          () => resolve(reader.result as string),
+          false,
+        )
+        reader.addEventListener('error', (e) => reject(e), false)
+        reader.readAsDataURL(xhr.response)
+      } else {
+        reject(new Error('Failed to proxy resource'))
+      }
+    }
+
+    xhr.onerror = reject
+    const queryString = proxy.indexOf('?') > -1 ? '&' : '?'
+    xhr.open(
+      'GET',
+      `${proxy}${queryString}url=${encodeURIComponent(
+        src,
+      )}&responseType=${responseType}`,
+    )
+
+    if (xhr instanceof XMLHttpRequest) {
+      xhr.responseType = responseType
+    }
+
+    xhr.send()
+  })
+}
+
 async function embedBackground<T extends HTMLElement>(
   clonedNode: T,
   options: Options,
@@ -38,7 +79,13 @@ async function embedImageNode<T extends HTMLElement | SVGImageElement>(
       ? clonedNode.src
       : clonedNode.href.baseVal
 
-  const dataURL = await resourceToDataURL(url, getMimeType(url), options)
+  let dataURL = '' as string
+  if (options.proxy) {
+    dataURL = await proxy(url, options)
+  } else {
+    dataURL = await resourceToDataURL(url, getMimeType(url), options)
+  }
+
   await new Promise((resolve, reject) => {
     clonedNode.onload = resolve
     clonedNode.onerror = reject

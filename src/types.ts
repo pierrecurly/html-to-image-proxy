@@ -1,5 +1,9 @@
 export interface Options {
   /**
+   * proxy url
+   */
+  proxy?: string
+  /**
    * Width in pixels to be applied to node before rendering.
    */
   width?: number
