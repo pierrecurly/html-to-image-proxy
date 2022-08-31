@@ -4,7 +4,7 @@
   "description": "Generates an image from a DOM node using HTML5 canvas and SVG.",
   "main": "lib/index.js",
   "module": "es/index.js",
-  "unpkg": "dist/html-to-image.js",
+  "unpkg": "dist/html-to-image-proxy.js",
   "types": "lib/index.d.ts",
   "files": [
     "dist",
@@ -34,7 +34,7 @@
     "test:debug": "karma start --browsers=Chrome --single-run=false --auto-watch --debug",
     "coveralls": "cat ./test/coverage/lcov.info | coveralls",
     "pretest": "rimraf ./test/coverage",
-    "prepare": "is-ci || husky install .husky"
+    "prepare": "npm run build"
   },
   "lint-staged": {
     "**/*.{js,jsx,tsx,ts,less,md,json}": [
@@ -72,7 +72,6 @@
     "@types/jasmine": "^4.3.0",
     "coveralls": "^3.1.1",
     "eslint": "^8.22.0",
-    "husky": "^8.0.1",
     "imagediff": "^1.0.8",
     "is-ci": "^3.0.1",
     "jasmine-core": "^4.3.0",
